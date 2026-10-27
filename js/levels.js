@@ -25,7 +25,7 @@
   var DEFS = {
     training: {
       id: 'training', theme: 'training', width: 3900,
-      solids: [ground(0, 1150), ground(1300, 2400), ground(2540, 3900)],
+      solids: [ground(0, 1150), ground(1270, 2400), ground(2540, 3900)],
       platforms: [plat(480, 490, 190), plat(760, 400, 170), plat(1560, 480, 200), plat(2700, 480, 180)],
       movers: [],
       footballs: [].concat(
