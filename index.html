@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <!-- Offline only: no network connections, no remote scripts, fonts or images. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'none'; font-src 'self'; media-src 'self' blob: data:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MathBots: Kick-Off Quest</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="stage" aria-live="off">
+  <canvas id="game" width="1280" height="720" aria-label="Game world"></canvas>
+
+  <!-- In-game heads-up display -->
+  <div id="hud" class="hidden">
+    <div class="hud-left">
+      <div class="avatar" title="Player photo placeholder - a grown-up can add a photo in a later version">
+        <canvas id="hud-avatar" width="64" height="64" aria-hidden="true"></canvas>
+      </div>
+      <div class="hud-text">
+        <div id="hud-mission" class="hud-mission">Training Ground</div>
+        <div id="hud-objective" class="hud-objective">Next: open the Maths Gate</div>
+        <div class="progress" aria-hidden="true"><div id="hud-progress" class="progress-fill"></div><div id="hud-progress-ball" class="progress-ball"></div></div>
+      </div>
+    </div>
+    <div class="hud-right">
+      <div class="coins" aria-label="Coins"><span class="coin-icon" aria-hidden="true"></span><span id="hud-coins">0</span></div>
+      <button id="btn-hud-sound" class="hud-btn" type="button" aria-label="Sound on or off">Sound: On</button>
+      <button id="btn-hud-pause" class="hud-btn" type="button" aria-label="Pause">&#10074;&#10074; Pause</button>
+    </div>
+  </div>
+
+  <!-- Teddy coach speech bubble -->
+  <div id="teddy" class="teddy hidden" role="status" aria-live="polite">
+    <canvas id="teddy-face" width="90" height="90" aria-hidden="true"></canvas>
+    <div class="bubble"><strong>Biscuit:</strong> <span id="teddy-text"></span></div>
+  </div>
+
+  <!-- Clickable controls -->
+  <div id="touch" class="touch hidden">
+    <button type="button" class="touch-btn" id="touch-left" aria-label="Run left" tabindex="-1">&#9664;</button>
+    <button type="button" class="touch-btn" id="touch-right" aria-label="Run right" tabindex="-1">&#9654;</button>
+    <button type="button" class="touch-btn jump" id="touch-jump" aria-label="Jump" tabindex="-1">Jump</button>
+  </div>
+
+  <!-- Title -->
+  <section id="screen-title" class="screen title-screen">
+    <div class="title-card">
+      <h1 class="logo"><span class="logo-math">Math</span><span class="logo-bots">Bots</span></h1>
+      <p class="subtitle">Kick-Off Quest</p>
+      <div class="menu" role="menu">
+        <button type="button" class="btn primary" id="btn-continue">Continue</button>
+        <button type="button" class="btn" id="btn-new">Start New Game</button>
+        <button type="button" class="btn" id="btn-missions">Missions</button>
+        <div class="menu-row">
+          <button type="button" class="btn small" id="btn-controls">Controls</button>
+          <button type="button" class="btn small" id="btn-settings">Settings</button>
+          <button type="button" class="btn small" id="btn-title-sound">Sound: On</button>
+        </div>
+      </div>
+      <p class="title-stats" id="title-stats"></p>
+    </div>
+    <div class="photo-frame" title="Photo placeholder">
+      <canvas id="title-portrait" width="160" height="160" aria-hidden="true"></canvas>
+      <span>Player photo<br><small>coming in a later version</small></span>
+    </div>
+  </section>
+
+  <!-- Mission select -->
+  <section id="screen-missions" class="screen hidden">
+    <div class="panel wide">
+      <h2>Choose a mission</h2>
+      <div id="mission-list" class="mission-list"></div>
+      <div class="row"><button type="button" class="btn" data-back>Back</button></div>
+    </div>
+  </section>
+
+  <!-- Controls -->
+  <section id="screen-controls" class="screen hidden">
+    <div class="panel">
+      <h2>Controls</h2>
+      <table class="controls-table">
+        <tr><td><kbd>&larr;</kbd> <kbd>&rarr;</kbd> or <kbd>A</kbd> <kbd>D</kbd></td><td>Run left and right</td></tr>
+        <tr><td><kbd>Space</kbd> or <kbd>&uarr;</kbd></td><td>Jump (hold for a higher jump)</td></tr>
+        <tr><td>Number keys, then <kbd>Enter</kbd></td><td>Type an answer at a Maths Gate</td></tr>
+        <tr><td>Click a big answer button</td><td>Choose an answer</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>Continue / choose</td></tr>
+        <tr><td><kbd>Esc</kbd> or the Pause button</td><td>Pause and resume</td></tr>
+        <tr><td><kbd>M</kbd></td><td>Sound on/off</td></tr>
+      </table>
+      <p class="note">You can also click the on-screen &#9664; &#9654; Jump buttons.</p>
+      <div class="row"><button type="button" class="btn primary" data-back>Back</button></div>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section id="screen-settings" class="screen hidden">
+    <div class="panel">
+      <h2>Settings</h2>
+      <div class="settings-grid">
+        <button type="button" class="btn toggle" id="set-sound"></button>
+        <button type="button" class="btn toggle" id="set-motion"></button>
+        <button type="button" class="btn toggle" id="set-contrast"></button>
+        <button type="button" class="btn toggle" id="set-touch"></button>
+      </div>
+      <button type="button" class="btn small hold" id="btn-grownups"><span class="hold-fill"></span><span class="hold-label">Grown-ups: press and hold</span></button>
+      <div class="row"><button type="button" class="btn primary" data-back>Back</button></div>
+    </div>
+  </section>
+
+  <!-- Grown-ups area -->
+  <section id="screen-grownups" class="screen hidden">
+    <div class="panel wide scroll">
+      <h2>For grown-ups</h2>
+      <p id="gu-storage" class="note"></p>
+      <p id="gu-saved" class="note"></p>
+      <div class="row wrap">
+        <button type="button" class="btn small" id="gu-export">Save a backup copy</button>
+        <button type="button" class="btn small" id="gu-open">Open save folder</button>
+        <button type="button" class="btn small" id="gu-restore">Restore previous save</button>
+        <button type="button" class="btn small danger" id="gu-reset">Reset all progress&hellip;</button>
+      </div>
+      <p id="gu-message" class="note" role="status"></p>
+      <h3>Practice summary (times tables)</h3>
+      <div id="gu-summary" class="summary"></div>
+      <h3>Content updates</h3>
+      <p id="gu-updates" class="note"></p>
+      <h3>Photo celebration</h3>
+      <p class="note">Planned for a later version: choose a local photo for the victory screen. It will stay on this computer and never be uploaded. See docs/PHOTO_FEATURE.md.</p>
+      <p class="note" id="gu-version"></p>
+      <div class="row"><button type="button" class="btn primary" data-back>Back</button></div>
+    </div>
+  </section>
+
+  <!-- First-run tutorial -->
+  <section id="screen-tutorial" class="screen hidden">
+    <div class="panel">
+      <canvas id="tutorial-art" width="360" height="150" aria-hidden="true"></canvas>
+      <h2 id="tutorial-title"></h2>
+      <p id="tutorial-text" class="big-text"></p>
+      <p id="tutorial-step" class="note"></p>
+      <div class="row">
+        <button type="button" class="btn" id="tutorial-skip">Skip</button>
+        <button type="button" class="btn primary" id="tutorial-next">Next</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pause -->
+  <section id="screen-pause" class="screen dim hidden">
+    <div class="panel">
+      <h2>Paused</h2>
+      <div class="menu">
+        <button type="button" class="btn primary" id="pause-resume">Resume</button>
+        <button type="button" class="btn toggle" id="pause-sound"></button>
+        <button type="button" class="btn toggle" id="pause-motion"></button>
+        <button type="button" class="btn" id="pause-checkpoint">Back to last flag</button>
+        <button type="button" class="btn" id="pause-missions">Missions</button>
+        <button type="button" class="btn" id="pause-title">Title screen</button>
+      </div>
+      <p class="note">Your progress saves automatically. To stop playing, click the &#10005; at the top right of the window.</p>
+    </div>
+  </section>
+
+  <!-- Maths challenge -->
+  <section id="screen-challenge" class="screen dim hidden" aria-labelledby="ch-question">
+    <div class="panel challenge">
+      <div class="ch-head">
+        <canvas id="ch-teddy" width="100" height="100" aria-hidden="true"></canvas>
+        <div>
+          <div class="ch-label" id="ch-label">Maths Gate</div>
+          <div class="ch-question" id="ch-question">6 &times; 7 = ?</div>
+        </div>
+      </div>
+      <div class="ch-entry" id="ch-entry" tabindex="0" aria-label="Typed answer">Type the answer or click one</div>
+      <div class="ch-options" id="ch-options"></div>
+      <div class="ch-feedback" id="ch-feedback" role="status" aria-live="polite"></div>
+      <div class="ch-explain hidden" id="ch-explain">
+        <canvas id="ch-array" width="520" height="210" aria-hidden="true"></canvas>
+        <p class="ch-sentence" id="ch-sentence"></p>
+        <p class="note" id="ch-skip"></p>
+      </div>
+      <div class="row" id="ch-actions"></div>
+    </div>
+  </section>
+
+  <!-- Mission complete -->
+  <section id="screen-complete" class="screen dim hidden">
+    <div class="panel wide complete">
+      <h2 id="cm-title">GOAL! Mission complete!</h2>
+      <div class="cm-body">
+        <canvas id="cm-art" width="260" height="200" aria-hidden="true"></canvas>
+        <ul id="cm-list" class="cm-list"></ul>
+      </div>
+      <div class="row" id="cm-actions"></div>
+    </div>
+  </section>
+
+  <!-- Confirm dialog -->
+  <section id="screen-confirm" class="screen dim hidden">
+    <div class="panel">
+      <h2 id="cf-title">Are you sure?</h2>
+      <p id="cf-text" class="big-text"></p>
+      <div class="row">
+        <button type="button" class="btn primary" id="cf-no">No, go back</button>
+        <button type="button" class="btn danger" id="cf-yes">Yes</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <noscript><div class="panel">MathBots needs JavaScript switched on.</div></noscript>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/maths.js"></script>
+<script src="js/learning.js"></script>
+<script src="js/rewards.js"></script>
+<script src="js/challenge.js"></script>
+<script src="js/save.js"></script>
+<script src="js/updates.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/physics.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/input.js"></script>
+<script src="js/render.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
